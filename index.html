@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="referrer" content="no-referrer">
+  <title>Shaka Player – Clean Demo</title>
+
+  <!-- Shaka Player + UI -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.1/shaka-player.ui.min.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.1/controls.min.css" crossorigin="anonymous"/>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+    }
+    [data-shaka-player-container] {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+    }
+    video { width: 100%; height: 100%; object-fit: cover; }
+    .shaka-spinner-container { display: none; } /* optional */
+  </style>
+</head>
+<body>
+  <div data-shaka-player-container>
+    <video autoplay muted data-shaka-player id="video"
+           poster="https://i.postimg.cc/LXP7342X/1200x600wa.png"></video>
+  </div>
+
+  <script>
+    // --- Human-readable setup mirroring your original logic (minus sensitive bits)
+
+    async function init() {
+      const videoEl = document.getElementById('video');
+
+      // Get Shaka UI and Player
+      const ui     = videoEl.ui;
+      const controls = ui.getControls();
+      const player = controls.getPlayer();
+
+      // Example UI configuration (similar to your code)
+      ui.configure({
+        controlPanelElements: [
+          'play_pause', 'time_and_duration', 'spacer', 'mute',
+          'volume', 'fullscreen', 'quality'
+        ],
+        volumeBarColors: {
+          base:  'rgba(0, 0, 0, 0.55)',
+          level: 'rgb(255, 255, 255)'
+        },
+        seekBarColors: {
+          base:     'rgba(0, 0, 0, 0.55)',
+          buffered: 'rgb(0, 255, 0)',
+          played:   'rgb(255, 255, 255)'
+        }
+      });
+
+      // (Your original code sets ClearKey here using obfuscated values.)
+      // For safety, we DON'T include your hidden keys/URL.
+      // If you need ClearKey, place your own legit keys here:
+      // player.configure({
+      //   drm: { clearKeys: { '<key-id-hex-without-dashes>': '<key-hex>' } }
+      // });
+
+      // Public demo MPD (so this page plays out of the box)
+      const demoMPD = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
+
+      // Your original logic builds a URL that ends with "enc.mpd".
+      // If you’re testing your own lawful content, put your URL here:
+      // const myMpd = 'https://example.com/path/to/enc.mpd';
+
+      // Error handlers
+      function onPlayerErrorEvent(e) { onPlayerError(e.detail); }
+      function onPlayerError(err) {
+        console.error('Unable to load the UI library! Error code', err.code, 'detail', err);
+      }
+      function onUIErrorEvent(e) { onPlayerError(e.detail); }
+
+      player.addEventListener('error', onPlayerErrorEvent);
+      controls.addEventListener('error', onUIErrorEvent);
+
+      try {
+        await player.load(demoMPD);
+        console.log('The video UI library has now been loaded!');
+      } catch (err) {
+        onPlayerError(err);
+      }
+    }
+
+    function initFailed() {
+      console.error('Unable to load the UI library!');
+    }
+
+    document.addEventListener('shaka-ui-loaded', init);
+    document.addEventListener('shaka-ui-load-failed', initFailed);
+  </script>
+</body>
+</html>
